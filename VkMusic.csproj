@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Platforms>AnyCPU;x64;x86</Platforms>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <AssemblyName>VZMusic</AssemblyName>
+    <RootNamespace>VZMusic</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="912.gif" />
+    <None Remove="icon.ico" />
+    <None Remove="Images\leftT.png" />
+    <None Remove="Images\pause.png" />
+    <None Remove="Images\play.png" />
+    <None Remove="Images\repeat.png" />
+    <None Remove="Images\rightT.png" />
+    <None Remove="p1_3494998_84fdc6c9.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CefSharp.Wpf.NETCore" Version="114.2.100" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="912.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icon.ico" />
+    <Resource Include="Images\leftT.png" />
+    <Resource Include="Images\pause.png" />
+    <Resource Include="Images\play.png" />
+    <Resource Include="Images\repeat.png" />
+    <Resource Include="Images\rightT.png" />
+    <Resource Include="p1_3494998_84fdc6c9.png" />
+  </ItemGroup>
+
+</Project>
