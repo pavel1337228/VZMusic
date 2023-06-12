@@ -6,7 +6,7 @@
         xmlns:gif="http://wpfanimatedgif.codeplex.com"
         xmlns:local="clr-namespace:VkMusic"
         mc:Ignorable="d"
-        Title="MainWindow" Background="Transparent" WindowStyle="None" AllowsTransparency="True" Height="600" Width="800" Loaded="Window_Loaded" Closing="Window_Closing">
+        Title="VZMusic" Background="#2c2d2e" ResizeMode="NoResize" WindowStyle="SingleBorderWindow" AllowsTransparency="False" Height="650" Width="820" Loaded="Window_Loaded" Closing="Window_Closing">
 
     <Window.Resources>
         <Style x:Key="SliderThumbStyle" TargetType="Thumb">
@@ -306,14 +306,18 @@
         </ControlTemplate>
     </Window.Resources>
 
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="32" ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
+    </WindowChrome.WindowChrome>
+
     <Window.DataContext>
         <local:Track/>
     </Window.DataContext>
 
-    <Border Background="#2c2d2e" CornerRadius="30" Padding="25" MouseDown="Border_MouseDown">
+    <Border Background="#2c2d2e" Padding="25" MouseDown="Border_MouseDown">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="25" />
+                <RowDefinition Height="35" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TabControl x:Name="tabs" Grid.Row="1" Background="Transparent" BorderThickness="0" Padding="0" BorderBrush="Transparent">

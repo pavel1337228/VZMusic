@@ -13,5 +13,6 @@ namespace VkMusic
     /// </summary>
     public partial class App : Application
     {
-    }
+		
+	}
 }

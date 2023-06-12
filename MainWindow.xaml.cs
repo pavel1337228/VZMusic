@@ -1,12 +1,16 @@
 ﻿using CefSharp;
 using CefSharp.DevTools;
 using CefSharp.Wpf;
+using NetDiscordRpc;
+using NetDiscordRpc.Core.Logger;
+using NetDiscordRpc.RPC;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,11 +36,11 @@ namespace VkMusic
         public MainWindow()
         {
             InitializeComponent();
+            
             ListViewTracks.ItemsSource = _tracks;
             _tracks.CollectionChanged += Tracks_CollectionChanged;
         }
-
-
+   
         private ChromiumWebBrowser _web;
         public ObservableCollection<Track> _tracks = new ObservableCollection<Track>();
         public Track currentSelectedTrack = new Track();
@@ -74,6 +78,10 @@ namespace VkMusic
             }
         }
         System.Timers.Timer t = new System.Timers.Timer();
+
+        private const long ClientId = 1117778479983906836;
+        public static DiscordRPC DiscordRpc;
+        private bool use = false;
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             //return;
@@ -81,12 +89,45 @@ namespace VkMusic
             settings.RootCachePath = System.IO.Path.GetFullPath("cache");
             settings.CachePath = System.IO.Path.GetFullPath("cache\\global");
             settings.CefCommandLineArgs["autoplay-policy"] = "no-user-gesture-required";
-            //settings.PersistSessionCookies = true;
             settings.UserAgent = "Mozilla/5.0 (Linux; Android 6.0; Nexus 6P Build/XXXXX; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/47.0.2526.68 Mobile Safari/537.36";
             Cef.Initialize(settings);
 
             _web = new ChromiumWebBrowser("https://m.vk.com/login");
-            
+
+
+            try
+            {
+                DiscordRpc = new DiscordRPC(ClientId.ToString());
+                DiscordRpc.Logger = new NullLogger();
+                DiscordRpc.Initialize();
+
+                DiscordRpc.SetPresence(new RichPresence()
+                {
+                    Details = "",
+                    State = "Слушаю музыку только тут",
+
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = "icon_1_",
+                        LargeImageText = "VZMusic да ежжи!",
+                        SmallImageKey = "SMALL_IMAGE_KEY_HERE",
+                        SmallImageText = "SMALL_IMAGE_TEXT_HERE"
+                    },
+
+                    Buttons = new NetDiscordRpc.RPC.Button[]
+                    {
+                        new() { Label = "Git", Url = "https://github.com/pavel1337228/VZMusic" }
+                    }
+                });
+
+                DiscordRpc.Invoke();
+
+                use = true;
+            }
+            catch
+            { }
+
+
             Grid.SetRow(_web, 0);
             vkPanel.Children.Add(_web);
             _web.AddressChanged += _web_AddressChanged;
@@ -104,14 +145,11 @@ namespace VkMusic
                     {
                         Dispatcher.Invoke(async () =>
                         {
-                            //_tracks = new ObservableCollection<Track>();
                             foreach (Track track in await _web.getTracks()) 
                             {
                                 _tracks.Add(track);
                             }
-                            //Tracks.Add(new Track());
-                            //list.Add(tracks[0]);
-                            //ListViewTracks.ItemsSource = Tracks;
+    
                             tabs.SelectedIndex = 1;
                             volume.Value = 0.5;
 
@@ -142,7 +180,6 @@ namespace VkMusic
                         PerelevaikaRGB.Opacity += 5;
                         if (PerelevaikaRGB.Opacity >= 70)
                             PerelevaikaRGB.Opacity = 10;
-                        //MessageBox.Show(PerelevaikaRGB.Direction.ToString());
                     }
                 });
             }
@@ -168,14 +205,23 @@ namespace VkMusic
                                 curTrackPos.Text = time.ToString(@"mm\:ss");
                                 TimeSpan timeE = TimeSpan.FromSeconds(currentSelectedTrack.getDurationInt);
                                 curTrackDur.Text = timeE.ToString(@"mm\:ss");
+
+                                if (use)
+                                {
+                                    DiscordRpc.UpdateDetails(currentSelectedTrack.IsPlaying ? isLooping ? "Слушает на повторе" : "Слушает" : "Стоит на паузе");
+                                    DiscordRpc.UpdateState(currentSelectedTrack.getTitle + " | " + currentSelectedTrack.getAutor);
+                                    DiscordRpc.UpdateTimestamps(new Timestamps()
+                                    {
+                                        Start = DateTime.UtcNow,
+                                        End = DateTime.UtcNow.AddSeconds(currentSelectedTrack.getDurationInt - position)
+                                    });
+                                }
                             }
-                            else 
+                            else
                             {
                                 await _web.pause();
                             }
                         });
-                        //var nextTrack = _tracks.Select((t, i) => new { index = i, track = t }).Single(t => t.track.id.ToString() == next_id);
-                        //Track.SetThis(nextTrack.track.id);
                     }
                 }
                 else if (e.Message.ToString().Split('_').Length == 4)
@@ -244,7 +290,14 @@ namespace VkMusic
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            try
+            {
+                DiscordRpc.ClearPresence();
+                DiscordRpc.Dispose();
+            }
+            catch { }
             Cef.Shutdown();
+            //Application.Current.Shutdown();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
